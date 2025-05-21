@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -32,9 +33,7 @@ func getTestParcel() Parcel {
 func TestAddGetDelete(t *testing.T) {
 	// prepare
 	db, err := sql.Open("sqlite", "tracker.db") // настройте подключение к БД
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 	defer db.Close()
 
 	store := NewParcelStore(db)
@@ -86,7 +85,7 @@ func TestSetAddress(t *testing.T) {
 	// получите добавленную посылку и убедитесь, что адрес обновился
 	getParcel, err := store.Get(id)
 	require.NoError(t, err)
-	require.Equal(t, updatedAddress, getParcel.Address)
+	assert.Equal(t, updatedAddress, getParcel.Address)
 }
 
 // TestSetStatus проверяет обновление статуса
@@ -113,7 +112,7 @@ func TestSetStatus(t *testing.T) {
 	// получите добавленную посылку и убедитесь, что статус обновился
 	getParcel, err := store.Get(id)
 	require.NoError(t, err)
-	require.Equal(t, updatedStatus, getParcel.Status)
+	assert.Equal(t, updatedStatus, getParcel.Status)
 }
 
 // TestGetByClient проверяет получение посылок по идентификатору клиента
@@ -156,16 +155,15 @@ func TestGetByClient(t *testing.T) {
 	// убедитесь в отсутствии ошибки
 	require.NoError(t, err)
 	// убедитесь, что количество полученных посылок совпадает с количеством добавленных
-	require.Len(t, storedParcels, len(parcels))
+	assert.Len(t, storedParcels, len(parcels))
 	// check
 	for _, parcel := range storedParcels {
 		// в parcelMap лежат добавленные посылки, ключ - идентификатор посылки, значение - сама посылка
 		// убедитесь, что все посылки из storedParcels есть в parcelMap
 		recon, ok := parcelMap[parcel.Number]
-		require.True(t, ok)
-		require.Equal(t, recon.Client, parcel.Client)
-		require.Equal(t, recon.Address, parcel.Address)
-		require.Equal(t, recon.Status, parcel.Status)
+		assert.True(t, ok)
+		assert.Equal(t, recon, parcel)
+
 		// убедитесь, что значения полей полученных посылок заполнены верно
 	}
 }
